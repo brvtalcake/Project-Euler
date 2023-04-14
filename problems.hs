@@ -1,4 +1,5 @@
 import Prelude
+import Control.Parallel ( par )
 
 
 {------------- COMMON -------------}
@@ -115,5 +116,26 @@ problem_838_func_f = problem_838_findNotCoprime 1
 problem_838 :: Double
 problem_838 = log (integerToDouble (problem_838_func_f 1000000))
 
+
+{------------- PROBLEM 838 (parallelized) -------------}
+problem_838_par_testNotCoprime :: Integer -> Integer -> Int -> Bool
+problem_838_par_testNotCoprime m n i | i + 1 >= length xs = True
+                                     | not (areCoprimes m (xs !! i)) = problem_838_par_testNotCoprime m n (i + 2) `par` problem_838_par_testNotCoprime m n (i + 1)
+                                     | otherwise = False
+                                     where xs = problem_838_integersToTest n
+
+problem_838_par_findNotCoprime :: Integer -> Integer -> Integer
+problem_838_par_findNotCoprime m n | problem_838_par_testNotCoprime m n 0 = m
+                                   | otherwise = problem_838_par_findNotCoprime (m + 2) n `par` problem_838_par_findNotCoprime (m + 1) n
+
+problem_838_par_func_f :: Integer -> Integer
+problem_838_par_func_f = problem_838_par_findNotCoprime 1
+
+problem_838_par :: Double
+problem_838_par = log (integerToDouble (problem_838_par_func_f 1000000))
+{- Really not sure if it makes it faster : in both cases it took too long to compute and I stopped it -}
+
+
 main :: IO ()
-main = print problem_838
+main = do
+      print problem_838_par
